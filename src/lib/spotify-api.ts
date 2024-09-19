@@ -1,7 +1,7 @@
 export const SPOTIFY_API_SCOPE = 'playlist-read-private playlist-read-collaborative user-library-read user-read-email user-read-private'
 
 export async function getPlaylists(
-  accessToken: string, acc: SpotifyPlaylist[] = []
+  accessToken: string, fetch = globalThis.fetch, acc: SpotifyPlaylist[] = []
 ): Promise<SpotifyPlaylist[]> {
   const response = await fetch(
     `https://api.spotify.com/v1/me/playlists?limit=50&offset=${acc.length}`,
@@ -9,12 +9,12 @@ export async function getPlaylists(
   )
   const data = await response.json() as SpotifyGetPlaylistsResponse
   acc.push(...data.items)
-  if (data.next) return await getPlaylists(accessToken, acc)
+  if (data.next) return await getPlaylists(accessToken, fetch, acc)
   return acc
 }
 
 export async function getPlaylistTracks(
-  accessToken: string, playlistId: string
+  accessToken: string, playlistId: string, fetch = globalThis.fetch
 ): Promise<SpotifyTrack[]> {
   const response = await fetch(
     `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=50`,

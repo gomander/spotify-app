@@ -20,7 +20,7 @@ export async function load({ fetch, url }): Promise<{
 
   await handleRefreshAuth(auth, fetch)
 
-  const playlists = await getPlaylists(auth.access_token)
+  const playlists = await getPlaylists(auth.access_token, fetch)
 
   return {
     accessToken: auth.access_token,

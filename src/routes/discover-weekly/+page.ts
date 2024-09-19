@@ -15,7 +15,7 @@ export async function load({ parent }): Promise<{
     redirect(303, '/')
   }
 
-  const discoverWeeklyTracks = await getPlaylistTracks(accessToken, discoverWeeklyPlaylist.id)
+  const discoverWeeklyTracks = await getPlaylistTracks(accessToken, discoverWeeklyPlaylist.id, fetch)
 
   return { discoverWeeklyPlaylist, discoverWeeklyTracks }
 }
