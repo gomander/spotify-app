@@ -1,8 +1,12 @@
 <script lang="ts">
   import Icon from '$lib/components/icon.svelte'
-  import type { SpotifyTrack } from '$lib/spotify-api'
+  import type { SpotifyPlaylist, SpotifyTrack } from '$lib/spotify-api'
 
-  let { tracks } = $props<{ tracks: SpotifyTrack[] }>()
+  let { playlist, trackActions, tracks } = $props<{
+    playlist?: SpotifyPlaylist
+    trackActions?: { name: string, icon: string, action: (track: SpotifyTrack) => void }[]
+    tracks: SpotifyTrack[]
+  }>()
 
   function getDurationStringFromMs(ms: number) {
     const totalSeconds = Math.floor(ms / 1000)
@@ -13,70 +17,103 @@
   }
 </script>
 
-<table class="table">
-  <thead>
-    <tr>
-      <th></th>
-      <th>Name</th>
-      <th class="hidden sm:table-cell">Artists</th>
-      <th class="hidden lg:table-cell">Album</th>
-      <th class="hidden md:table-cell">Duration</th>
-      <th></th>
-    </tr>
-  </thead>
+<div class="flex flex-col gap-2">
+  {#if playlist}
+    <h2 class="h4">{playlist.name}</h2>
 
-  <tbody>
-    {#each tracks as track}
+    <p>
+      {playlist.description}
+      <a
+        href={playlist.external_urls.spotify}
+        target="_blank"
+        class="underline decoration-dashed"
+      >
+        Open in Spotify
+      </a>
+    </p>
+  {/if}
+
+  <table class="table">
+    <thead>
       <tr>
-        <td class="min-w-16">
-          <img
-            src={track.album.images[0].url}
-            alt={track.album.name}
-            class="w-12 h-12 rounded-md"
-          >
-        </td>
+        <th>#</th>
+        <th></th>
+        <th>Name</th>
+        <th class="hidden sm:table-cell">Artists</th>
+        <th class="hidden lg:table-cell">Album</th>
+        <th class="hidden md:table-cell">Duration</th>
+        {#if trackActions.length}
+          <th></th>
+        {/if}
+      </tr>
+    </thead>
 
-        <td>
-          <a
-            href={track.external_urls.spotify}
-            target="_blank"
-            class="underline decoration-dashed"
-          >
-            {track.name}
-          </a>
-        </td>
+    <tbody>
+      {#each tracks as track, i (track.id)}
+        <tr>
+          <td>{i + 1}</td>
 
-        <td class="hidden sm:table-cell">
-          {#each track.artists as artist, i}
-            {#if i > 0},{/if}
+          <td class="min-w-16">
+            <img
+              src={track.album.images[0].url}
+              alt="{track.album.name} album cover"
+              class="w-12 h-12 rounded-md"
+            >
+          </td>
+
+          <td>
             <a
-              href={artist.external_urls.spotify}
+              href={track.external_urls.spotify}
               target="_blank"
               class="underline decoration-dashed"
             >
-              {artist.name}
+              {track.name}
             </a>
-          {/each}
-        </td>
+          </td>
 
-        <td class="hidden lg:table-cell">{track.album.name}</td>
+          <td class="hidden sm:table-cell">
+            {#each track.artists as artist, i}
+              {#if i > 0},{/if}
+              <a
+                href={artist.external_urls.spotify}
+                target="_blank"
+                class="underline decoration-dashed"
+              >
+                {artist.name}
+              </a>
+            {/each}
+          </td>
 
-        <td class="text-right hidden md:table-cell">
-          {getDurationStringFromMs(track.duration_ms)}
-        </td>
+          <td class="hidden lg:table-cell">
+            <a
+              href={track.album.external_urls.spotify}
+              target="_blank"
+              class="underline decoration-dashed"
+            >
+              {track.album.name}
+            </a>
+          </td>
 
-        <td>
-          <button
-            class="btn-icon hover:preset-tonal-primary rounded-full"
-            onclick={() => {}}
-          >
-            <Icon name="more" />
-          </button>
-        </td>
-      </tr>
-    {/each}
-  </tbody>
-</table>
+          <td class="text-right hidden md:table-cell">
+            {getDurationStringFromMs(track.duration_ms)}
+          </td>
+
+          <td>
+            {#each trackActions as action}
+              <button
+                class="btn-icon hover:preset-tonal-primary rounded-full"
+                onclick={() => action.action(track)}
+                aria-label={action.name}
+              >
+                <Icon name={action.icon} />
+              </button>
+            {/each}
+          </td>
+        </tr>
+      {/each}
+    </tbody>
+  </table>
+</div>
 
 <style>
   a {

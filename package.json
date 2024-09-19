@@ -20,7 +20,7 @@
     "@sveltejs/vite-plugin-svelte": "^4.0.0-next.7",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.47",
-    "svelte": "^5.0.0-next.253",
+    "svelte": "^5.0.0-next.255",
     "svelte-check": "^4.0.2",
     "tailwindcss": "^3.4.12",
     "typescript": "^5.6.2",

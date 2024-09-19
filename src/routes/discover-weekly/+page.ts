@@ -1,7 +1,7 @@
 import { redirect } from '@sveltejs/kit'
 import { getPlaylistTracks, type SpotifyPlaylist, type SpotifyTrack } from '$lib/spotify-api'
 
-export async function load({ parent }): Promise<{
+export async function load({ fetch, parent }): Promise<{
   discoverWeeklyPlaylist: SpotifyPlaylist,
   discoverWeeklyTracks: SpotifyTrack[]
 }> {
@@ -10,7 +10,7 @@ export async function load({ parent }): Promise<{
     redirect(303, '/')
   }
 
-  const discoverWeeklyPlaylist = playlists?.find(playlist => playlist.name === 'Discover Weekly')
+  const discoverWeeklyPlaylist = playlists?.find(playlist => playlist.name === 'Discover Weekly' && playlist.owner.id === 'spotify')
   if (!discoverWeeklyPlaylist) {
     redirect(303, '/')
   }
