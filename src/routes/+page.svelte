@@ -20,14 +20,21 @@
     localStorage.removeItem('spotify_auth')
     window.location.reload()
   }
+
+  console.log($page.data.playlists)
 </script>
 
 <main class="flex flex-col gap-2 p-2">
   <h1 class="text-2xl">Spotify Playlist Manager</h1>
 
-  {#if $page.data.auth}
+  {#if $page.data.accessToken}
     <p>Logged in</p>
     <button class="btn preset-filled" onclick={logOut}>Log out</button>
+    <ul>
+      {#each $page.data.playlists as playlist}
+        <li>{playlist.name}</li>
+      {/each}
+    </ul>
   {:else}
     <p><a href={loginLink}>Log in to Spotify to get started.</a></p>
   {/if}

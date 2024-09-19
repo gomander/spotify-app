@@ -3,18 +3,25 @@ import { CLIENT_SECRET } from '$env/static/private'
 
 export async function POST({ fetch, request }) {
   try {
-    const { code } = await request.json()
+    const { code, refreshToken } = await request.json()
+    const body = new URLSearchParams()
+    if (code && !refreshToken) {
+      body.append('grant_type', 'authorization_code')
+      body.append('code', code)
+      body.append('redirect_uri', PUBLIC_REDIRECT_URL)
+    } else if (refreshToken && !code) {
+      body.append('grant_type', 'refresh_token')
+      body.append('refresh_token', refreshToken)
+    } else {
+      throw new Error('Invalid request')
+    }
     const response = await fetch('https://accounts.spotify.com/api/token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         Authorization: 'Basic ' + btoa(`${PUBLIC_CLIENT_ID}:${CLIENT_SECRET}`)
       },
-      body: new URLSearchParams({
-        grant_type: 'authorization_code',
-        code,
-        redirect_uri: PUBLIC_REDIRECT_URL
-      })
+      body
     })
     const data = await response.json()
     return new Response(JSON.stringify(data))
