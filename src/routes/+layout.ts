@@ -7,7 +7,7 @@ import {
 export const ssr = false
 
 export async function load({ fetch, url }): Promise<{
-  accessToken: string | null, playlists?: SpotifyPlaylist[]
+  accessToken?: string, refreshToken?: string, playlists?: SpotifyPlaylist[]
 }> {
   await handleAuthReturn(url, fetch)
 
@@ -15,7 +15,7 @@ export async function load({ fetch, url }): Promise<{
 
   if (!authIsValid(auth)) {
     localStorage.removeItem('spotify_auth')
-    return { accessToken: null }
+    return { }
   }
 
   await handleRefreshAuth(auth, fetch)
@@ -24,6 +24,7 @@ export async function load({ fetch, url }): Promise<{
 
   return {
     accessToken: auth.access_token,
+    refreshToken: auth.refresh_token,
     playlists
   }
 }

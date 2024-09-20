@@ -14,19 +14,16 @@ export async function getPlaylists(
 }
 
 export async function getPlaylistTracks(
-  accessToken: string, playlistId: string, fetch = globalThis.fetch
+  accessToken: string, playlistId: string, fetch = globalThis.fetch, acc: SpotifyTrack[] = []
 ): Promise<SpotifyTrack[]> {
   const response = await fetch(
-    `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=50`,
+    `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=50&offset=${acc.length}`,
     { headers: { Authorization: 'Bearer ' + accessToken } }
   )
   const data = await response.json() as SpotifyGetPlaylistTracksResponse
-  return Promise.all(data.items.map(async item => {
-    const response = await fetch(item.track.href,
-      { headers: { Authorization: 'Bearer ' + accessToken } }
-    )
-    return await response.json() as SpotifyTrack
-  }))
+  acc.push(...data.items.map(item => item.track))
+  if (data.next) return await getPlaylistTracks(accessToken, playlistId, fetch, acc)
+  return acc
 }
 
 export interface SpotifyAuthData {

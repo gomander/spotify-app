@@ -32,7 +32,7 @@
     <button class="btn preset-filled" onclick={logOut}>Log out</button>
     <ul>
       {#each $page.data.playlists as playlist}
-        <li>{playlist.name}</li>
+        <li><a href="/playlist/{playlist.id}">{playlist.name}</a></li>
       {/each}
     </ul>
   {:else}
