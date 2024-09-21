@@ -4,7 +4,7 @@ import { getPlaylistTracks, type SpotifyPlaylist, type SpotifyTrack } from '$lib
 export async function load({ fetch, params, parent }): Promise<{
   playlist: SpotifyPlaylist,
   tracks: Promise<SpotifyTrack[]>,
-  archivedVersions: { tracks: string[], timestamp: string }[]
+  archivedVersions: Promise<{ tracks: string[], timestamp: string }[]>
 }> {
   const { accessToken, userId, userHash, playlists } = await parent()
   if (!accessToken) {
@@ -21,11 +21,11 @@ export async function load({ fetch, params, parent }): Promise<{
   const response = await fetch(`/api/playlists/${params.playlistId}`,
     { headers: { Authorization: 'Basic ' + btoa(`${userId}:${userHash}`) } }
   )
-  const data = await response.json() as { data: { archivedVersions: { tracks: string[], timestamp: string }[] } }
+  const archivedVersions = (response.json() as Promise<{ data: { archivedVersions: { tracks: string[], timestamp: string }[] } }>).then(data => data.data.archivedVersions)
 
   return {
     playlist,
     tracks,
-    archivedVersions: data.data.archivedVersions
+    archivedVersions
   }
 }

@@ -20,8 +20,6 @@
     localStorage.removeItem('spotify_auth')
     window.location.reload()
   }
-
-  console.log($page.data.playlists)
 </script>
 
 <main class="flex flex-col gap-2 p-2">
