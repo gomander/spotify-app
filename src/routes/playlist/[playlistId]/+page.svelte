@@ -4,23 +4,25 @@
   import PlaylistHeader from '$lib/components/playlist-header.svelte'
   import PlaylistTable from '$lib/components/playlist-table.svelte'
   import type { SpotifyPlaylist, SpotifyTrack } from '$lib/spotify-api'
+  import type { ArchivedPlaylistVersion } from '$lib/utils'
 
   let playlist = $derived<SpotifyPlaylist>($page.data.playlist)
   let tracks = $derived<Promise<SpotifyTrack[]>>($page.data.tracks)
-  let archivedVersions = $derived<Promise<{ tracks: string[], timestamp: string }[]>>($page.data.archivedVersions)
+  let archivedVersions = $derived<Promise<ArchivedPlaylistVersion[]>>($page.data.archivedVersions)
 
   async function archivePlaylist() {
     await fetch(`/api/playlists`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Basic ' + btoa(`${$page.data.userId}:${$page.data.userHash}`)
+      },
       body: JSON.stringify({
         playlist: {
           id: playlist.id,
           name: playlist.name,
           tracks: (await tracks).map(track => track.id)
-        },
-        userId: $page.data.userId,
-        userHash: $page.data.userHash
+        }
       })
     })
   }

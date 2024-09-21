@@ -20,12 +20,13 @@ export async function GET({ request }) {
 
 export async function POST({ request }) {
   try {
-    const { userId, playlist, userHash } = await request.json()
-    if (!userId || !playlist || !userHash) {
-      throw new Error('Invalid request')
-    }
+    const { userId, userHash } = getUserIdAndHash(request.headers.get('Authorization'))
     if (userHash !== createUserHash(userId)) {
       throw new Error('Invalid user hash')
+    }
+    const { playlist } = await request.json()
+    if (!playlist) {
+      throw new Error('No playlist provided')
     }
     await archivePlaylist(userId, playlist)
     return new Response(JSON.stringify({ data: { success: true } }), { status: 201 })

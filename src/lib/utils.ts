@@ -24,3 +24,8 @@ export interface AppAuthData {
   userHash: string
   userId: string
 }
+
+export interface ArchivedPlaylistVersion {
+  tracks: string[]
+  timestamp: string
+}

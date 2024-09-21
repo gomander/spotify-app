@@ -1,5 +1,6 @@
 import { db } from '$lib/server/firebase'
 import type { DbPlaylist } from '$lib/server/server-utils'
+import type { ArchivedPlaylistVersion } from '$lib/utils'
 
 export async function upsertUser(userId: string) {
   await db.collection('users').doc(userId).set({ id: userId }, { merge: true })
@@ -37,7 +38,7 @@ export async function getPlaylist(userId: string, playlistId: string) {
   const docSnapshot = await playlistDoc.get()
   const playlist = docSnapshot.data() as { id: string, name: string }
   const collectionSnapshot = await playlistDoc.collection('archivedVersions').get()
-  const archivedVersions = collectionSnapshot.docs.map(doc => doc.data() as { tracks: string[], timestamp: string })
+  const archivedVersions = collectionSnapshot.docs.map(doc => doc.data() as ArchivedPlaylistVersion)
   return { playlist, archivedVersions }
 }
 
@@ -50,7 +51,7 @@ export async function getPlaylistArchivedVersion(userId: string, playlistId: str
     .collection('archivedVersions')
     .doc(timestamp)
     .get()
-  return docSnapshot.data() as { tracks: string[], timestamp: string }
+  return docSnapshot.data() as ArchivedPlaylistVersion
 }
 
 export async function getPlaylists(userId: string) {
@@ -59,5 +60,5 @@ export async function getPlaylists(userId: string) {
     .doc(userId)
     .collection('playlists')
     .get()
-  return snapshot.docs.map(doc => doc.data() as { tracks: string[], timestamp: string })
+  return snapshot.docs.map(doc => doc.data() as { id: string, name: string })
 }
