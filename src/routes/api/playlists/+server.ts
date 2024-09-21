@@ -24,12 +24,20 @@ export async function POST({ request }) {
     if (userHash !== createUserHash(userId)) {
       throw new Error('Invalid user hash')
     }
-    const { playlist } = await request.json()
-    if (!playlist) {
-      throw new Error('No playlist provided')
+    const body = await request.json()
+    if (
+      typeof body === 'object' && body !== null &&
+      'playlist' in body && typeof body.playlist === 'object' && body.playlist !== null &&
+      'id' in body.playlist && typeof body.playlist.id === 'string' &&
+      'name' in body.playlist && typeof body.playlist.name === 'string' &&
+      'tracks' in body.playlist && Array.isArray(body.playlist.tracks) &&
+      body.playlist.tracks.every((track: unknown) => typeof track === 'string')
+    ) {
+      await archivePlaylist(userId, body.playlist)
+      return new Response(JSON.stringify({ data: { success: true } }), { status: 201 })
+    } else {
+      throw new Error('Invalid body')
     }
-    await archivePlaylist(userId, playlist)
-    return new Response(JSON.stringify({ data: { success: true } }), { status: 201 })
   } catch (e) {
     return new Response(
       JSON.stringify({ error: getErrorStringFromUnknown(e) }),

@@ -21,7 +21,7 @@
         playlist: {
           id: playlist.id,
           name: playlist.name,
-          tracks: (await tracks).map(track => track.id)
+          tracks: (await tracks).map(track => track.id).filter(Boolean)
         }
       })
     })
