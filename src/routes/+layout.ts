@@ -1,7 +1,6 @@
 import { redirect } from '@sveltejs/kit'
-import {
-  getPlaylists, SPOTIFY_API_SCOPE, type SpotifyAuthData, type SpotifyPlaylist
-} from '$lib/spotify-api'
+import { getPlaylists, SPOTIFY_API_SCOPE, type SpotifyPlaylist } from '$lib/spotify-api'
+import type { AppAuthData } from '$lib/utils'
 
 export const ssr = false
 
@@ -41,17 +40,15 @@ async function handleAuthReturn(url: URL, fetch = globalThis.fetch) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code: url.searchParams.get('code') })
     })
-    const data = await response.json() as SpotifyAuthData & { hash: string }
-    localStorage.setItem('spotify_auth', JSON.stringify({
-      ...data,
-      expires: Date.now() + data.expires_in * 1000
-    } satisfies SpotifyAuthData & { hash: string, expires: number }))
+    const data = await response.json() as AppAuthData | { error: string }
+    if ('error' in data) throw new Error(data.error)
+    localStorage.setItem('spotify_auth', JSON.stringify(data))
 
     redirect(303, '/')
   }
 }
 
-function getAuthDataFromLocalStorage(): SpotifyAuthData & { hash: string, expires: number } | null {
+function getAuthDataFromLocalStorage(): AppAuthData | null {
   try {
     const auth = JSON.parse(localStorage.getItem('spotify_auth') || '{}')
     if ('error' in auth) throw new Error(auth.error)
@@ -62,34 +59,32 @@ function getAuthDataFromLocalStorage(): SpotifyAuthData & { hash: string, expire
   }
 }
 
-function authIsValid(auth: unknown): auth is SpotifyAuthData & { hash: string, expires: number } {
+function authIsValid(auth: unknown): auth is AppAuthData {
   return (
     auth !== null && typeof auth === 'object' &&
     'access_token' in auth && typeof auth.access_token === 'string' &&
     'refresh_token' in auth && typeof auth.refresh_token === 'string' &&
     'expires_in' in auth && typeof auth.expires_in === 'number' &&
     'expires' in auth && typeof auth.expires === 'number' &&
-    'hash' in auth && typeof auth.hash === 'string' &&
+    'userHash' in auth && typeof auth.userHash === 'string' &&
+    'userId' in auth && typeof auth.userId === 'string' &&
     'token_type' in auth && auth.token_type === 'Bearer' &&
     'scope' in auth && auth.scope === SPOTIFY_API_SCOPE
   )
 }
 
-async function handleRefreshAuth(
-  auth: SpotifyAuthData & { hash: string, expires: number }, fetch = globalThis.fetch
-) {
+async function handleRefreshAuth(auth: AppAuthData, fetch = globalThis.fetch) {
   if (auth.expires < Date.now()) {
     const response = await fetch('/api/authenticate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refreshToken: auth.refresh_token })
     })
-    const data = await response.json() as SpotifyAuthData & { hash: string }
+    const data = await response.json() as AppAuthData | { error: string }
+    if ('error' in data) throw new Error(data.error)
     localStorage.setItem('spotify_auth', JSON.stringify({
-      ...auth,
-      ...data,
-      expires: Date.now() + data.expires_in * 1000
-    } satisfies SpotifyAuthData & { hash: string, expires: number }))
+      ...auth, ...data
+    } satisfies AppAuthData))
 
     redirect(303, '/')
   }

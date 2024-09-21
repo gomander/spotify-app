@@ -4,7 +4,9 @@ export async function getOwnProfile(accessToken: string, fetch = globalThis.fetc
   const response = await fetch('https://api.spotify.com/v1/me', {
     headers: { Authorization: 'Bearer ' + accessToken }
   })
-  return await response.json() as SpotifyUser
+  const data = await response.json() as SpotifyUser | SpotifyError
+  if ('error' in data) throw new Error(data.error.message)
+  return data
 }
 
 export async function getPlaylists(
@@ -14,7 +16,8 @@ export async function getPlaylists(
     `https://api.spotify.com/v1/me/playlists?limit=50&offset=${acc.length}`,
     { headers: { Authorization: 'Bearer ' + accessToken } }
   )
-  const data = await response.json() as SpotifyGetPlaylistsResponse
+  const data = await response.json() as SpotifyGetPlaylistsResponse | SpotifyError
+  if ('error' in data) throw new Error(data.error.message)
   acc.push(...data.items)
   if (data.next) return await getPlaylists(accessToken, fetch, acc)
   return acc
@@ -27,7 +30,8 @@ export async function getPlaylistTracks(
     `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=50&offset=${acc.length}`,
     { headers: { Authorization: 'Bearer ' + accessToken } }
   )
-  const data = await response.json() as SpotifyGetPlaylistTracksResponse
+  const data = await response.json() as SpotifyGetPlaylistTracksResponse | SpotifyError
+  if ('error' in data) throw new Error(data.error.message)
   acc.push(...data.items.map(item => item.track))
   if (data.next) return await getPlaylistTracks(accessToken, playlistId, fetch, acc)
   return acc
@@ -35,14 +39,17 @@ export async function getPlaylistTracks(
 
 export interface SpotifyAuthData {
   access_token: string
-  token_type: string
+  token_type: 'Bearer'
   expires_in: number
   refresh_token: string
   scope: string
 }
 
-export interface SpotifyAuthDataWithExpires extends SpotifyAuthData {
-  expires: number
+export interface SpotifyError {
+  error: {
+    status: number
+    message: string
+  }
 }
 
 interface SpotifyGetPlaylistsResponse {

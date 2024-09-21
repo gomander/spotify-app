@@ -1,7 +1,8 @@
 import crypto from 'node:crypto'
 import { PUBLIC_CLIENT_ID, PUBLIC_REDIRECT_URL } from '$env/static/public'
 import { CLIENT_SECRET } from '$env/static/private'
-import { getOwnProfile } from '$lib/spotify-api'
+import { getOwnProfile, type SpotifyAuthData } from '$lib/spotify-api'
+import { getErrorStringFromUnknown, type AppAuthData } from '$lib/utils'
 
 export async function POST({ fetch, request }) {
   try {
@@ -25,14 +26,21 @@ export async function POST({ fetch, request }) {
       },
       body
     })
-    const data = await response.json()
-    if (!response.ok) {
+    const data = await response.json() as SpotifyAuthData | { error: string }
+    if ('error' in data) {
       throw new Error(data.error)
     }
     const profile = await getOwnProfile(data.access_token, fetch)
-    const hash = crypto.createHash('sha256').update(profile.id + CLIENT_SECRET).digest('hex')
-    return new Response(JSON.stringify({ ...data, hash }))
-  } catch (error) {
-    return new Response(JSON.stringify(error), { status: 400 })
+    return new Response(JSON.stringify({
+      ...data,
+      userHash: crypto.createHash('sha256').update(profile.id + CLIENT_SECRET).digest('hex'),
+      userId: profile.id,
+      expires: Date.now() + data.expires_in * 1000
+    } satisfies AppAuthData))
+  } catch (e) {
+    return new Response(
+      JSON.stringify({ error: getErrorStringFromUnknown(e) }),
+      { status: 400 }
+    )
   }
 }
