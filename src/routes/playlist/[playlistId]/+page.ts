@@ -3,7 +3,7 @@ import { getPlaylistTracks, type SpotifyPlaylist, type SpotifyTrack } from '$lib
 
 export async function load({ fetch, params, parent }): Promise<{
   playlist: SpotifyPlaylist,
-  tracks: SpotifyTrack[]
+  tracks: Promise<SpotifyTrack[]>
 }> {
   const { accessToken, playlists } = await parent()
   if (!accessToken) {
@@ -15,7 +15,7 @@ export async function load({ fetch, params, parent }): Promise<{
     redirect(303, '/')
   }
 
-  const tracks = await getPlaylistTracks(accessToken, playlist.id, fetch)
+  const tracks = getPlaylistTracks(accessToken, params.playlistId, fetch)
 
   return { playlist, tracks }
 }

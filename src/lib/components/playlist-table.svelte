@@ -1,11 +1,10 @@
 <script lang="ts">
   import Icon from '$lib/components/icon.svelte'
-  import type { SpotifyPlaylist, SpotifyTrack } from '$lib/spotify-api'
+  import type { SpotifyTrack } from '$lib/spotify-api'
 
-  let { playlist, trackActions, tracks }: {
-    playlist?: SpotifyPlaylist
+  let { trackActions, tracks }: {
     trackActions?: { name: string, icon: any, action: (track: SpotifyTrack) => void }[]
-    tracks: SpotifyTrack[]
+    tracks: SpotifyTrack[] | Promise<SpotifyTrack[]>
   } = $props()
 
   function getDurationStringFromMs(ms: number) {
@@ -15,85 +14,29 @@
 
     return `${minutes}:${seconds.toString().padStart(2, '0')}`
   }
-
-  function getTotalDuration() {
-    const ms = tracks.reduce((acc, track) => acc + track.duration_ms, 0)
-    const totalMinutes = Math.floor(ms / 1000 / 60)
-    const hours = Math.floor(totalMinutes / 60)
-    const minutes = totalMinutes % 60
-
-    return `${hours}h ${minutes}m`
-  }
 </script>
 
-<div class="flex flex-col gap-2">
-  {#if playlist}
-    <section class="flex gap-4">
-      <img
-        src={playlist.images[0]?.url}
-        alt=""
-        class="w-32 h-32 rounded-md"
-      >
-
-      <div>
-        <h2 class="h4">{playlist.name}</h2>
-
-        <p>
-          <a
-            href={playlist.external_urls.spotify}
-            target="_blank"
-            class="underline decoration-dashed"
-          >
-            Open in Spotify
-          </a>
-        </p>
-
-        <p>{playlist.description}</p>
-      </div>
-
-      <div>
-        <p class="whitespace-nowrap">
-          <strong>Owner:</strong>
-          <a
-            href={playlist.owner.external_urls.spotify}
-            target="_blank"
-            class="underline decoration-dashed"
-          >
-            {playlist.owner.display_name}
-          </a>
-        </p>
-
-        <p class="whitespace-nowrap">
-          <strong>Tracks:</strong> {playlist.tracks.total}
-        </p>
-
-        <p class="whitespace-nowrap">
-          <strong>Duration:</strong> {getTotalDuration()}
-        </p>
-
-        <p class="whitespace-nowrap">
-          {playlist.public ? 'Public' : 'Private'} playlist
-        </p>
-      </div>
-    </section>
-  {/if}
-
-  <table class="table">
-    <thead>
-      <tr>
-        <th>#</th>
+<table class="table">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th></th>
+      <th>Name</th>
+      <th class="hidden sm:table-cell">Artists</th>
+      <th class="hidden lg:table-cell">Album</th>
+      <th class="hidden md:table-cell">Duration</th>
+      {#if trackActions?.length}
         <th></th>
-        <th>Name</th>
-        <th class="hidden sm:table-cell">Artists</th>
-        <th class="hidden lg:table-cell">Album</th>
-        <th class="hidden md:table-cell">Duration</th>
-        {#if trackActions?.length}
-          <th></th>
-        {/if}
-      </tr>
-    </thead>
+      {/if}
+    </tr>
+  </thead>
 
-    <tbody>
+  <tbody>
+    {#await tracks}
+      <tr>
+        <td colspan="6">Loading...</td>
+      </tr>
+    {:then tracks}
       {#each tracks as track, i (track.id)}
         <tr>
           <td>{i + 1}</td>
@@ -156,9 +99,9 @@
           </td>
         </tr>
       {/each}
-    </tbody>
-  </table>
-</div>
+    {/await}
+  </tbody>
+</table>
 
 <style>
   a {
