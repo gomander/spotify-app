@@ -1,5 +1,7 @@
+import crypto from 'node:crypto'
 import { PUBLIC_CLIENT_ID, PUBLIC_REDIRECT_URL } from '$env/static/public'
 import { CLIENT_SECRET } from '$env/static/private'
+import { getOwnProfile } from '$lib/spotify-api'
 
 export async function POST({ fetch, request }) {
   try {
@@ -24,7 +26,12 @@ export async function POST({ fetch, request }) {
       body
     })
     const data = await response.json()
-    return new Response(JSON.stringify(data))
+    if (!response.ok) {
+      throw new Error(data.error)
+    }
+    const profile = await getOwnProfile(data.access_token, fetch)
+    const hash = crypto.createHash('sha256').update(profile.id + CLIENT_SECRET).digest('hex')
+    return new Response(JSON.stringify({ ...data, hash }))
   } catch (error) {
     return new Response(JSON.stringify(error), { status: 400 })
   }

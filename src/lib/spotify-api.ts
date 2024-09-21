@@ -1,5 +1,12 @@
 export const SPOTIFY_API_SCOPE = 'playlist-read-private playlist-read-collaborative user-library-read user-read-email user-read-private'
 
+export async function getOwnProfile(accessToken: string, fetch = globalThis.fetch): Promise<SpotifyUser> {
+  const response = await fetch('https://api.spotify.com/v1/me', {
+    headers: { Authorization: 'Bearer ' + accessToken }
+  })
+  return await response.json() as SpotifyUser
+}
+
 export async function getPlaylists(
   accessToken: string, fetch = globalThis.fetch, acc: SpotifyPlaylist[] = []
 ): Promise<SpotifyPlaylist[]> {
@@ -85,7 +92,7 @@ export interface SpotifyGetPlaylistTracksResponse {
 
 export interface SpotifyPlaylistTrack {
   added_at: string
-  added_by: SpotifyUser
+  added_by: SpotifyUserSimple
   is_local: boolean
   primary_color: string | null
   track: SpotifyTrack
@@ -153,7 +160,7 @@ export interface SpotifyArtist {
   uri: string
 }
 
-export interface SpotifyUser {
+export interface SpotifyUserSimple {
   display_name: string | null
   external_urls: {
     spotify: string
@@ -166,4 +173,19 @@ export interface SpotifyUser {
   id: string
   type: 'user'
   uri: string
+}
+
+export interface SpotifyUser extends SpotifyUserSimple {
+  country: string
+  email: string
+  explicit_content: {
+    filter_enabled: boolean
+    filter_locked: boolean
+  }
+  images: {
+    height: number | null
+    url: string
+    width: number | null
+  }[]
+  product: 'free' | 'open' | 'premium'
 }
