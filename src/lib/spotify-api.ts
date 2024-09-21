@@ -37,6 +37,21 @@ export async function getPlaylistTracks(
   return acc
 }
 
+export async function getTracks(
+  accessToken: string, trackIds: string[], fetch = globalThis.fetch, acc: SpotifyTrack[] = []
+): Promise<SpotifyTrack[]> {
+  const batch = trackIds.slice(acc.length, acc.length + 50)
+  const response = await fetch(
+    `https://api.spotify.com/v1/tracks?ids=${batch.join(',')}`,
+    { headers: { Authorization: 'Bearer ' + accessToken } }
+  )
+  const data = await response.json() as { tracks: SpotifyTrack[] } | SpotifyError
+  if ('error' in data) throw new Error(data.error.message)
+  acc.push(...data.tracks)
+  if (acc.length < trackIds.length) return await getTracks(accessToken, trackIds, fetch, acc)
+  return acc
+}
+
 export interface SpotifyAuthData {
   access_token: string
   token_type: 'Bearer'

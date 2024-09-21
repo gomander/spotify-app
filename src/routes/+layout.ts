@@ -5,7 +5,11 @@ import type { AppAuthData } from '$lib/utils'
 export const ssr = false
 
 export async function load({ fetch, url }): Promise<{
-  accessToken?: string, refreshToken?: string, playlists?: SpotifyPlaylist[]
+  accessToken?: string,
+  refreshToken?: string,
+  userId?: string,
+  userHash?: string,
+  playlists?: SpotifyPlaylist[]
 }> {
   await handleAuthReturn(url, fetch)
 
@@ -23,6 +27,8 @@ export async function load({ fetch, url }): Promise<{
   return {
     accessToken: auth.access_token,
     refreshToken: auth.refresh_token,
+    userId: auth.userId,
+    userHash: auth.userHash,
     playlists
   }
 }

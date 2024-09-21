@@ -1,15 +1,16 @@
 import { redirect } from '@sveltejs/kit'
-import { getPlaylistTracks, type SpotifyTrack } from '$lib/spotify-api'
+import type { SpotifyPlaylist } from '$lib/spotify-api'
 
-export async function load({ fetch, parent }): Promise<{ tracks: SpotifyTrack[] }> {
+export async function load({ parent }): Promise<{ playlist: SpotifyPlaylist }> {
   const { accessToken, playlists } = await parent()
+  if (!accessToken || !playlists) {
+    redirect(303, '/')
+  }
 
   const playlist = playlists?.find(playlist => playlist.name === 'Discover Weekly' && playlist.owner.id === 'spotify')
   if (!playlist) {
     redirect(303, '/')
   }
 
-  const tracks = await getPlaylistTracks(accessToken!, playlist.id, fetch)
-
-  return { tracks }
+  return { playlist }
 }
