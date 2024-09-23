@@ -15,6 +15,6 @@
   <h1 class="h5">Spotify Archiver</h1>
 </header>
 
-<main class="px-4 py-2 flex flex-col gap-2">
+<main class="p-4 max-w-screen-xl mx-auto flex flex-col gap-4">
   <PlaylistTable {tracks} />
 </main>
