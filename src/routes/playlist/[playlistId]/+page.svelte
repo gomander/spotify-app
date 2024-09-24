@@ -28,15 +28,20 @@
   }
 </script>
 
-<header class="px-4 py-2 flex justify-between items-center bg-primary-500 text-surface-50">
-  <a href="/" class="btn-icon">
+<header class="px-4 py-2 flex justify-between items-center preset-filled-primary-500">
+  <a
+    href="/"
+    class="btn-icon preset-filled-primary-400-600"
+    title="Home"
+    aria-label="Home"
+  >
     <Icon name="home" />
   </a>
 
   <h1 class="h5">Spotify Archiver</h1>
 
   <button
-    class="btn preset-filled-primary-500"
+    class="btn preset-filled-primary-400-600"
     onclick={archivePlaylist}
   >
     Archive
@@ -60,7 +65,7 @@
         {#each versions as version}
           <li>
             <a href={`/playlist/${playlist.id}/${version.timestamp}`}>
-              {version.timestamp}
+              {version.timestamp.slice(0, 10)}
             </a>
           </li>
         {/each}
