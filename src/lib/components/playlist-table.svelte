@@ -16,7 +16,7 @@
   }
 </script>
 
-<table class="table">
+<table class="table w-full">
   <thead>
     <tr>
       <th>#</th>
@@ -99,6 +99,10 @@
           </td>
         </tr>
       {/each}
+    {:catch error}
+      <tr>
+        <td colspan="6">Error loading tracks: "{error.message}"</td>
+      </tr>
     {/await}
   </tbody>
 </table>

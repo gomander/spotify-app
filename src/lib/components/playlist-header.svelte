@@ -23,7 +23,7 @@
     class="w-32 h-32 rounded-md"
   >
 
-  <div>
+  <div class="flex-1">
     <h2 class="h4">{playlist.name}</h2>
 
     <p>
@@ -56,16 +56,12 @@
     </p>
 
     {#if tracks}
-      <p class="whitespace-nowrap">
-        <strong>Duration:</strong>
-        {#await tracks}
-          Loading...
-        {:then tracks}
+      {#await tracks then tracks}
+        <p class="whitespace-nowrap">
+          <strong>Duration:</strong>
           {getTotalDuration(tracks)}
-        {:catch}
-          unknown
-        {/await}
-      </p>
+        </p>
+      {/await}
     {/if}
 
     <p class="whitespace-nowrap">

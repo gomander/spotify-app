@@ -48,23 +48,24 @@
   </button>
 </header>
 
-<main class="px-4 py-2 flex flex-col gap-2">
+<main class="p-4 max-w-screen-xl mx-auto flex flex-col gap-4">
   <PlaylistHeader
-    playlist={$page.data.playlist}
-    tracks={$page.data.tracks}
+    {playlist}
+    {tracks}
   />
 
-  <PlaylistTable tracks={$page.data.tracks} />
+  <PlaylistTable {tracks} />
 
-  {#await archivedVersions}
-    <p>Loading...</p>
-  {:then versions}
+  {#await archivedVersions then versions}
     {#if versions.length > 0}
-      <h2 class="h6">Archived versions</h2>
-      <ul class="list-none">
+      <h2 class="h6">Archived versions of {playlist.name}</h2>
+      <ul>
         {#each versions as version}
           <li>
-            <a href={`/playlist/${playlist.id}/${version.timestamp}`}>
+            <a
+              href={`/playlist/${playlist.id}/${version.timestamp}`}
+              class="underline decoration-dashed"
+            >
               {version.timestamp.slice(0, 10)}
             </a>
           </li>
@@ -72,6 +73,15 @@
       </ul>
     {/if}
   {:catch error}
-    <p>Error: {error.message}</p>
+    <p>Error loading archived versions of {playlist.name}:<br>"{error.message}"</p>
   {/await}
 </main>
+
+<style>
+  a {
+    text-decoration-color: color-mix(in srgb, currentColor, transparent);
+  }
+  a:hover {
+    text-decoration-color: unset;
+  }
+</style>
