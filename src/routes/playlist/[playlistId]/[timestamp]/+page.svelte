@@ -15,7 +15,7 @@
 <header class="px-4 py-2 flex justify-between items-center preset-filled-primary-500">
   <a
     href="/"
-    class="btn-icon"
+    class="btn-icon preset-filled-primary-400-600"
   >
     <Icon name="home" />
   </a>
